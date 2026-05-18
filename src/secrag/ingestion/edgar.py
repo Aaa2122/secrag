@@ -62,9 +62,7 @@ def _is_retryable(exc: BaseException) -> bool:
 class EdgarClient:
     def __init__(self, user_agent: str | None = None) -> None:
         ua = user_agent or get_settings().sec_user_agent
-        self._http = httpx.Client(
-            headers={"User-Agent": ua}, timeout=30.0, follow_redirects=True
-        )
+        self._http = httpx.Client(headers={"User-Agent": ua}, timeout=30.0, follow_redirects=True)
         self._last_request_at = 0.0
 
     def _throttle(self) -> None:
