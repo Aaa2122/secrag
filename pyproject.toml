@@ -1,0 +1,48 @@
+[project]
+name = "secrag"
+version = "0.1.0"
+description = "Production RAG over SEC 10-K filings — pgvector, hybrid search, reranking, evals"
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi>=0.115",
+    "uvicorn[standard]>=0.32",
+    "sqlalchemy[asyncio]>=2.0.36",
+    "asyncpg>=0.30",
+    "alembic>=1.14",
+    "pgvector>=0.3.6",
+    "pydantic-settings>=2.6",
+    "httpx>=0.28",
+    "tenacity>=9.0",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.3",
+    "pytest-asyncio>=0.24",
+    "respx>=0.22",
+    "ruff>=0.8",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/secrag"]
+
+[tool.ruff]
+line-length = 100
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+asyncio_default_test_loop_scope = "session"
+testpaths = ["tests"]
+addopts = "-m 'not live'"
+markers = [
+    "integration: needs the compose Postgres running",
+    "live: performs real network calls to SEC EDGAR",
+]
