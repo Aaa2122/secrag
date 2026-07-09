@@ -1,14 +1,16 @@
+import asyncio
 import json
 import logging
 import time
 from pathlib import Path
 from typing import Annotated, Literal
 
-from fastapi import Depends, FastAPI, Query
+from fastapi import Depends, FastAPI, Query, Request
 from fastapi.responses import FileResponse, StreamingResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from secrag import __version__, generation
+from secrag.api.ratelimit import check_rate_limit
 from secrag.api.schemas import SearchResponse, SearchResult
 from secrag.config import get_settings
 from secrag.db import session_factory
@@ -62,6 +64,7 @@ def health() -> dict[str, str]:
 
 @app.get("/search", response_model=SearchResponse)
 async def search(
+    request: Request,
     q: Annotated[str, Query(min_length=2)],
     session: Annotated[AsyncSession, Depends(get_session)],
     embedder: Annotated[Embedder, Depends(embedder_dep)],
@@ -72,6 +75,7 @@ async def search(
     fiscal_years: Annotated[list[int] | None, Query()] = None,
     items: Annotated[list[str] | None, Query()] = None,
 ) -> SearchResponse:
+    await check_rate_limit(request, "search", get_settings().rate_limit_search_per_min)
     filters = SearchFilters(
         tickers=tickers or [], fiscal_years=fiscal_years or [], items=items or []
     )
@@ -112,6 +116,7 @@ def _sse(event: str, data: dict) -> str:
 
 @app.get("/ask")
 async def ask(
+    request: Request,
     q: Annotated[str, Query(min_length=2)],
     session: Annotated[AsyncSession, Depends(get_session)],
     embedder: Annotated[Embedder, Depends(embedder_dep)],
@@ -122,6 +127,7 @@ async def ask(
     items: Annotated[list[str] | None, Query()] = None,
 ) -> StreamingResponse:
     """Grounded answer as SSE: `sources` event, `token` events, then `done`."""
+    await check_rate_limit(request, "ask", get_settings().rate_limit_ask_per_min)
     filters = SearchFilters(
         tickers=tickers or [], fiscal_years=fiscal_years or [], items=items or []
     )
@@ -148,11 +154,19 @@ async def ask(
         )
         # generation.generate_answer is monkeypatched in tests (no API key needed).
         try:
-            async for event in generation.generate_answer(q, results):
-                if event["type"] == "token":
-                    yield _sse("token", {"text": event["text"]})
-                else:
-                    yield _sse("done", event)
+            async with asyncio.timeout(get_settings().generation_timeout_s):
+                async for event in generation.generate_answer(q, results):
+                    if event["type"] == "token":
+                        yield _sse("token", {"text": event["text"]})
+                    else:
+                        yield _sse("done", event)
+                        log.info(
+                            "ask ok q_len=%d tokens=%s/%s cost=%s",
+                            len(q),
+                            event.get("input_tokens"),
+                            event.get("output_tokens"),
+                            event.get("cost_usd"),
+                        )
         except Exception as exc:
             # Sources were already streamed; degrade to retrieval-only instead
             # of killing the connection. Details stay in server logs.
