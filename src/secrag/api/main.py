@@ -6,9 +6,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from secrag import __version__
 from secrag.api.schemas import SearchResponse, SearchResult
+from secrag.config import get_settings
 from secrag.db import session_factory
 from secrag.embedding import Embedder, get_embedder
-from secrag.retrieval.search import SearchFilters, hybrid_search, vector_search
+from secrag.rerank import get_reranker
+from secrag.retrieval.search import SearchFilters, hybrid_search, rerank_results, vector_search
 
 app = FastAPI(title="secrag", version=__version__)
 
@@ -34,6 +36,7 @@ async def search(
     embedder: Annotated[Embedder, Depends(embedder_dep)],
     mode: Literal["vector", "hybrid"] = "hybrid",
     k: Annotated[int, Query(ge=1, le=50)] = 5,
+    rerank: bool = False,
     tickers: Annotated[list[str] | None, Query()] = None,
     fiscal_years: Annotated[list[int] | None, Query()] = None,
     items: Annotated[list[str] | None, Query()] = None,
@@ -41,20 +44,27 @@ async def search(
     filters = SearchFilters(
         tickers=tickers or [], fiscal_years=fiscal_years or [], items=items or []
     )
+    fetch_k = get_settings().rerank_candidates if rerank else k
     t0 = time.perf_counter()
     query_embedding = embedder.embed_query(q)
     t1 = time.perf_counter()
     if mode == "hybrid":
-        results = await hybrid_search(session, q, query_embedding, k=k, filters=filters)
+        results = await hybrid_search(session, q, query_embedding, k=fetch_k, filters=filters)
     else:
-        results = await vector_search(session, query_embedding, k=k, filters=filters)
+        results = await vector_search(session, query_embedding, k=fetch_k, filters=filters)
     t2 = time.perf_counter()
+    timing = {
+        "embed": round((t1 - t0) * 1000, 2),
+        "search": round((t2 - t1) * 1000, 2),
+    }
+    if rerank:
+        # get_reranker is a cached singleton, loaded on first rerank=true request;
+        # tests monkeypatch it to avoid the multi-GB model download.
+        results = rerank_results(get_reranker(), q, results, k=k)
+        timing["rerank"] = round((time.perf_counter() - t2) * 1000, 2)
     return SearchResponse(
         query=q,
         mode=mode,
         results=[SearchResult(**vars(r)) for r in results],
-        timing_ms={
-            "embed": round((t1 - t0) * 1000, 2),
-            "search": round((t2 - t1) * 1000, 2),
-        },
+        timing_ms=timing,
     )

@@ -18,7 +18,8 @@ from secrag.db import session_factory
 from secrag.embedding import get_embedder
 from secrag.evals.golden import GOLDEN_PATH, load_golden, resolve_refs
 from secrag.evals.metrics import mrr_at_k, percentile, recall_at_k
-from secrag.retrieval.search import hybrid_search, vector_search
+from secrag.rerank import get_reranker
+from secrag.retrieval.search import hybrid_search, rerank_results, vector_search
 
 log = logging.getLogger(__name__)
 
@@ -36,9 +37,11 @@ def _git_rev() -> str:
         return "unknown"
 
 
-async def run_retrieval_eval(mode: str, label: str) -> dict:
+async def run_retrieval_eval(mode: str, label: str, rerank: bool = False) -> dict:
     questions = [q for q in load_golden() if q.answerable]
     embedder = get_embedder()
+    reranker = get_reranker() if rerank else None
+    settings = get_settings()
     factory = session_factory()
 
     async with factory() as session:
@@ -47,6 +50,8 @@ async def run_retrieval_eval(mode: str, label: str) -> dict:
     per_question: list[dict] = []
     embed_ms: list[float] = []
     search_ms: list[float] = []
+    rerank_ms: list[float] = []
+    fetch_k = settings.rerank_candidates if rerank else max(K_VALUES)
 
     async with factory() as session:
         for q in questions:
@@ -54,12 +59,15 @@ async def run_retrieval_eval(mode: str, label: str) -> dict:
             qvec = embedder.embed_query(q.question)
             t1 = time.perf_counter()
             if mode == "vector":
-                results = await vector_search(session, qvec, k=max(K_VALUES))
+                results = await vector_search(session, qvec, k=fetch_k)
             elif mode == "hybrid":
-                results = await hybrid_search(session, q.question, qvec, k=max(K_VALUES))
+                results = await hybrid_search(session, q.question, qvec, k=fetch_k)
             else:
                 raise ValueError(f"unknown mode: {mode!r}")
             t2 = time.perf_counter()
+            if rerank:
+                results = rerank_results(reranker, q.question, results, k=max(K_VALUES))
+                rerank_ms.append((time.perf_counter() - t2) * 1000)
 
             retrieved = [r.chunk_id for r in results]
             relevant = relevant_by_q[q.id]
@@ -83,15 +91,19 @@ async def run_retrieval_eval(mode: str, label: str) -> dict:
             "mrr@10": statistics.mean(r["mrr"] for r in rows),
         }
 
-    total_ms = [e + s for e, s in zip(embed_ms, search_ms, strict=True)]
+    if rerank_ms:
+        total_ms = [e + s + r for e, s, r in zip(embed_ms, search_ms, rerank_ms, strict=True)]
+    else:
+        total_ms = [e + s for e, s in zip(embed_ms, search_ms, strict=True)]
     result = {
         "label": label,
         "created_at": datetime.now(UTC).isoformat(timespec="seconds"),
         "git_rev": _git_rev(),
         "config": {
             "mode": mode,
-            "embedder": get_settings().embedding_model,
-            "reranker": None,
+            "embedder": settings.embedding_model,
+            "reranker": settings.reranker_model if rerank else None,
+            "rerank_candidates": settings.rerank_candidates if rerank else None,
             "k_values": list(K_VALUES),
         },
         "aggregate": agg(per_question),
@@ -103,6 +115,14 @@ async def run_retrieval_eval(mode: str, label: str) -> dict:
             "embed_p95": round(percentile(embed_ms, 95), 1),
             "search_p50": round(percentile(search_ms, 50), 1),
             "search_p95": round(percentile(search_ms, 95), 1),
+            **(
+                {
+                    "rerank_p50": round(percentile(rerank_ms, 50), 1),
+                    "rerank_p95": round(percentile(rerank_ms, 95), 1),
+                }
+                if rerank_ms
+                else {}
+            ),
             "total_p50": round(percentile(total_ms, 50), 1),
             "total_p95": round(percentile(total_ms, 95), 1),
         },
@@ -134,13 +154,14 @@ def write_result(result: dict) -> Path:
 def main() -> None:
     parser = argparse.ArgumentParser(description="Run retrieval evals against the golden dataset")
     parser.add_argument("--mode", default="vector", choices=["vector", "hybrid"])
+    parser.add_argument("--rerank", action="store_true")
     parser.add_argument("--label", required=True)
     args = parser.parse_args()
     logging.basicConfig(level=logging.INFO, format="%(levelname)s %(message)s")
 
     if not GOLDEN_PATH.exists():
         raise SystemExit(f"golden dataset not found: {GOLDEN_PATH}")
-    result = asyncio.run(run_retrieval_eval(args.mode, args.label))
+    result = asyncio.run(run_retrieval_eval(args.mode, args.label, rerank=args.rerank))
     out = write_result(result)
     agg = result["aggregate"]
     log.info("wrote %s", out)

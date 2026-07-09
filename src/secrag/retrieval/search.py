@@ -128,3 +128,17 @@ async def hybrid_search(
     by_id = {r.chunk_id: r for r in [*vec, *fts]}
     fused = rrf_fuse([[r.chunk_id for r in vec], [r.chunk_id for r in fts]])
     return [replace(by_id[cid], score=score) for cid, score in fused[:k]]
+
+
+def rerank_results(
+    reranker, query_text: str, results: list[RetrievedChunk], k: int
+) -> list[RetrievedChunk]:
+    """Re-order retrieval candidates with a cross-encoder; keep the top k."""
+    if not results:
+        return []
+    scores = reranker.score(query_text, [r.content for r in results])
+    reranked = sorted(
+        (replace(r, score=s) for r, s in zip(results, scores, strict=True)),
+        key=lambda r: -r.score,
+    )
+    return reranked[:k]

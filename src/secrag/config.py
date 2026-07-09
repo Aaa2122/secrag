@@ -10,6 +10,8 @@ class Settings(BaseSettings):
     embedding_provider: str = "local"
     embedding_model: str = "BAAI/bge-small-en-v1.5"
     embedding_dim: int = 384
+    reranker_model: str = "BAAI/bge-reranker-v2-m3"
+    rerank_candidates: int = 30
     sec_user_agent: str = "secrag/0.1 (auguste.sagaert@gmail.com)"
 
 
