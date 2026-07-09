@@ -51,9 +51,9 @@ uv run python -m secrag.evals.run --mode hybrid --rerank --label my-run
 | 3 | Evals harness: recall@k, MRR, latency p50/p95, cost/query — versioned runs | ✅ |
 | 4 | Hybrid search: tsvector + RRF fusion + metadata filters | ✅ |
 | 5 | Reranking: top-30 → bge-reranker-v2-m3 → top-5 (the headline eval) | ✅ |
-| 6 | Generation: /ask streaming, mandatory citations, refusals, faithfulness evals | ○ |
+| 6 | Generation: /ask streaming, mandatory citations, refusals, faithfulness evals | ◐ |
 | 7 | Observability (Langfuse), rate limiting, timeouts, fallbacks | ○ |
-| 8 | Minimal UI + public /evals page | ○ |
+| 8 | Minimal UI + public /evals page | ◐ (deploy at 9) |
 | 9 | Deploy (TLS + domain), CI gate: evals block merge on regression | ○ |
 | 10 | README as case study: decisions, failure modes, costs | ○ |
 
