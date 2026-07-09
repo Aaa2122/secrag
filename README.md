@@ -60,11 +60,11 @@ uv run python -m secrag.evals.run --mode hybrid --rerank --label my-run
 | 3 | Evals harness: recall@k, MRR, latency p50/p95, cost/query — versioned runs | ✅ |
 | 4 | Hybrid search: tsvector + RRF fusion + metadata filters | ✅ |
 | 5 | Reranking: top-30 → bge-reranker-v2-m3 → top-5 (the headline eval) | ✅ |
-| 6 | Generation: /ask streaming, mandatory citations, refusals, faithfulness evals | ◐ |
-| 7 | Observability (Langfuse), rate limiting, timeouts, fallbacks | ○ |
-| 8 | Minimal UI + public /evals page | ◐ (deploy at 9) |
-| 9 | Deploy (TLS + domain), CI gate: evals block merge on regression | ○ |
-| 10 | README as case study: decisions, failure modes, costs | ○ |
+| 6 | Generation: /ask streaming, mandatory citations, refusals, faithfulness evals | ✅ |
+| 7 | Observability: rate limiting, timeouts, cost logging (Langfuse: pending account) | ✅ |
+| 8 | Minimal UI + public /evals page | ✅ |
+| 9 | CI eval gate ✅ · [deploy guide](DEPLOY.md) ✅ · public URL pending a VPS | ◐ |
+| 10 | README as case study: decisions, failure modes, costs | ✅ |
 
 ## Evals (retrieval)
 
@@ -111,6 +111,20 @@ Reading, honestly:
   embeddings, feeds exact terms to full-text search, and makes citations
   self-describing.
 
+## Operating costs, measured
+
+| Stage | Cost | Notes |
+|---|---|---|
+| Corpus acquisition | $0 | EDGAR is free (declared UA, ≤10 req/s) |
+| Ingestion embeddings (19 filings, 8,001 chunks) | $0 | local bge-small, 809 s CPU one-off |
+| Retrieval (vector / hybrid / rerank) | **$0 / query** | no paid API anywhere in the path |
+| Generation (`/ask`, claude-haiku-4-5) | ~$0.0015 / query | measured: 1.3k in / 40 out tokens |
+| Full retrieval eval (52 questions × 4 k-values) | $0 | re-runnable at will |
+| Full generation eval (58 gen + LLM-judge) | ~$0.2 | see `evals/CHANGELOG.md` for actuals |
+
+The model is a config switch (`GENERATION_MODEL`); the cost column on the
+evals page tracks whichever is deployed.
+
 ## Failure modes found on real filings (and handling)
 
 - **Item detection traps:** the table of contents repeats every Item heading
@@ -126,5 +140,22 @@ Reading, honestly:
 - **EDGAR pagination:** high-volume filers (JPM) have short `recent` windows;
   older filings live in additional submission pages (not yet fetched — corpus
   is 19/20 filings).
+- **Infra under memory pressure:** the CPU reranker (~2.4 GB resident) plus
+  the dev database took Docker Desktop down twice mid-eval. Handling:
+  `pool_pre_ping` on the engine, short-lived sessions in eval loops, and
+  checkpointed generation evals so an interrupted run never re-spends API
+  credits.
+
+## Future work
+
+- **Cross-document questions** (recall@5 0.292 even reranked): query
+  decomposition / per-ticker sub-retrieval, then merge — the one category a
+  better ranker cannot fix.
+- **JPM FY2024**: fetch EDGAR's additional submission pages for high-volume
+  filers (corpus 19 → 20).
+- **Item re-tagging** for incorporation-by-reference filers (NVDA/JPM/XOM
+  content under Items 15/16).
+- **Langfuse tracing** per request stage; **GPU or distilled reranker** to cut
+  the 33 s rerank median.
 
 Spec and per-jalon plans live in [docs/superpowers/](docs/superpowers/).

@@ -1,0 +1,11 @@
+{
+  "retrieval": {
+    "recall@5": 0.65,
+    "mrr@10": 0.55
+  },
+  "generation": {
+    "fabricated_figures_rate_max": 0.05,
+    "citation_in_range_rate": 0.9,
+    "refusal_correct_rate": 0.8
+  }
+}

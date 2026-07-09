@@ -28,3 +28,6 @@ jobs:
       - run: uv run ruff format --check .
       - run: uv run alembic upgrade head
       - run: uv run pytest -q
+      # Evals gate: merges are blocked if the latest committed eval runs
+      # regress below evals/thresholds.json.
+      - run: uv run python -m secrag.evals.gate
