@@ -12,6 +12,8 @@ class Settings(BaseSettings):
     embedding_dim: int = 384
     reranker_model: str = "BAAI/bge-reranker-v2-m3"
     rerank_candidates: int = 30
+    generation_model: str = "claude-opus-4-8"
+    anthropic_api_key: str | None = None  # falls back to the SDK's env resolution
     sec_user_agent: str = "secrag/0.1 (auguste.sagaert@gmail.com)"
 
 
