@@ -18,7 +18,7 @@ from secrag.db import session_factory
 from secrag.embedding import get_embedder
 from secrag.evals.golden import GOLDEN_PATH, load_golden, resolve_refs
 from secrag.evals.metrics import mrr_at_k, percentile, recall_at_k
-from secrag.retrieval.search import vector_search
+from secrag.retrieval.search import hybrid_search, vector_search
 
 log = logging.getLogger(__name__)
 
@@ -55,6 +55,8 @@ async def run_retrieval_eval(mode: str, label: str) -> dict:
             t1 = time.perf_counter()
             if mode == "vector":
                 results = await vector_search(session, qvec, k=max(K_VALUES))
+            elif mode == "hybrid":
+                results = await hybrid_search(session, q.question, qvec, k=max(K_VALUES))
             else:
                 raise ValueError(f"unknown mode: {mode!r}")
             t2 = time.perf_counter()
@@ -131,7 +133,7 @@ def write_result(result: dict) -> Path:
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Run retrieval evals against the golden dataset")
-    parser.add_argument("--mode", default="vector", choices=["vector"])
+    parser.add_argument("--mode", default="vector", choices=["vector", "hybrid"])
     parser.add_argument("--label", required=True)
     args = parser.parse_args()
     logging.basicConfig(level=logging.INFO, format="%(levelname)s %(message)s")

@@ -12,8 +12,16 @@ from sqlalchemy import text
 from secrag.db import session_factory
 
 PROBES = [
-    ("numeric_sales", "7", ["%net sales%", "%total revenue%", "%revenue increased%", "%revenue decreased%"]),
-    ("numeric_other", None, ["%full-time employees%", "%dividend%per share%", "%repurchase%billion%"]),
+    (
+        "numeric_sales",
+        "7",
+        ["%net sales%", "%total revenue%", "%revenue increased%", "%revenue decreased%"],
+    ),
+    (
+        "numeric_other",
+        None,
+        ["%full-time employees%", "%dividend%per share%", "%repurchase%billion%"],
+    ),
     ("risk_supply", "1a", ["%supply%", "%single source%", "%suppliers%"]),
     ("risk_ai", "1a", ["%artificial intelligence%", "% AI %"]),
     ("risk_reg", "1a", ["%regulat%", "%antitrust%", "%export control%"]),
