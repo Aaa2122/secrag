@@ -85,9 +85,10 @@ def _walk_blocks(node: Node, out: list[Block]) -> None:
         if tag == "table":
             out.extend(_table_blocks(child))
             continue
-        has_block_children = any(
-            g.tag in BLOCK_TAGS for g in child.iter(include_text=False)
-        ) or child.css_first("table") is not None
+        has_block_children = (
+            any(g.tag in BLOCK_TAGS for g in child.iter(include_text=False))
+            or child.css_first("table") is not None
+        )
         if has_block_children:
             _walk_blocks(child, out)
         else:
