@@ -8,7 +8,11 @@ _engine: AsyncEngine | None = None
 def get_engine() -> AsyncEngine:
     global _engine
     if _engine is None:
-        _engine = create_async_engine(get_settings().database_url)
+        # pre_ping + recycle: idle connections through Docker's port proxy get
+        # silently dropped; detect and replace them instead of failing mid-request.
+        _engine = create_async_engine(
+            get_settings().database_url, pool_pre_ping=True, pool_recycle=300
+        )
     return _engine
 
 

@@ -53,34 +53,36 @@ async def run_retrieval_eval(mode: str, label: str, rerank: bool = False) -> dic
     rerank_ms: list[float] = []
     fetch_k = settings.rerank_candidates if rerank else max(K_VALUES)
 
-    async with factory() as session:
-        for q in questions:
-            t0 = time.perf_counter()
-            qvec = embedder.embed_query(q.question)
-            t1 = time.perf_counter()
+    for q in questions:
+        t0 = time.perf_counter()
+        qvec = embedder.embed_query(q.question)
+        t1 = time.perf_counter()
+        # One short-lived session per question: with CPU reranking in between,
+        # a single session would idle in transaction for minutes and get dropped.
+        async with factory() as session:
             if mode == "vector":
                 results = await vector_search(session, qvec, k=fetch_k)
             elif mode == "hybrid":
                 results = await hybrid_search(session, q.question, qvec, k=fetch_k)
             else:
                 raise ValueError(f"unknown mode: {mode!r}")
-            t2 = time.perf_counter()
-            if rerank:
-                results = rerank_results(reranker, q.question, results, k=max(K_VALUES))
-                rerank_ms.append((time.perf_counter() - t2) * 1000)
+        t2 = time.perf_counter()
+        if rerank:
+            results = rerank_results(reranker, q.question, results, k=max(K_VALUES))
+            rerank_ms.append((time.perf_counter() - t2) * 1000)
 
-            retrieved = [r.chunk_id for r in results]
-            relevant = relevant_by_q[q.id]
-            embed_ms.append((t1 - t0) * 1000)
-            search_ms.append((t2 - t1) * 1000)
-            per_question.append(
-                {
-                    "id": q.id,
-                    "category": q.category,
-                    "recall": {k: recall_at_k(relevant, retrieved, k) for k in K_VALUES},
-                    "mrr": mrr_at_k(relevant, retrieved, k=10),
-                }
-            )
+        retrieved = [r.chunk_id for r in results]
+        relevant = relevant_by_q[q.id]
+        embed_ms.append((t1 - t0) * 1000)
+        search_ms.append((t2 - t1) * 1000)
+        per_question.append(
+            {
+                "id": q.id,
+                "category": q.category,
+                "recall": {k: recall_at_k(relevant, retrieved, k) for k in K_VALUES},
+                "mrr": mrr_at_k(relevant, retrieved, k=10),
+            }
+        )
 
     categories = sorted({p["category"] for p in per_question})
 
