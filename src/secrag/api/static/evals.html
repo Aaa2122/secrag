@@ -134,8 +134,15 @@ footer{margin-top:70px;border-top:1px solid var(--rule);padding-top:16px;font-fa
   <div style="overflow-x:auto;margin-top:14px"><table id="categories"></table></div>
 </section>
 
-<section>
+<section id="gen-section" style="display:none">
   <div class="item-label">Item 5.</div>
+  <h2>Generation quality</h2>
+  <p class="note" id="gen-note"></p>
+  <div class="stages" id="gen-stats"></div>
+</section>
+
+<section>
+  <div class="item-label">Item 6.</div>
   <h2>Run register</h2>
   <p class="note">Every run is a committed JSON file; this table is read from those artifacts.</p>
   <div style="overflow-x:auto;margin-top:14px"><table id="runs"></table></div>
@@ -165,9 +172,11 @@ function latestPerStage(runs){
 }
 
 async function main(){
-  const runs = await (await fetch('/evals/data')).json();
+  const all = await (await fetch('/evals/data')).json();
   document.getElementById('asof').textContent =
-    'As of ' + (runs.length ? runs[runs.length-1].created_at.slice(0,10) : '—');
+    'As of ' + (all.length ? all[all.length-1].created_at.slice(0,10) : '—');
+  const runs = all.filter(r => r.kind !== 'generation');
+  const gens = all.filter(r => r.kind === 'generation');
   const st = latestPerStage(runs);
   const order = ['vector','hybrid','rerank'];
   const titles = {vector:'① Vector only', hybrid:'② + Full-text (RRF)', rerank:'③ + Reranker'};
@@ -236,7 +245,28 @@ async function main(){
         `<td>${fmt(a['mrr@10'])}</td></tr>`).join('');
   }
 
-  // Item 5 — run register
+  // Item 5 — generation quality (latest generation run, when one exists)
+  if (gens.length){
+    const g = gens[gens.length-1], a = g.aggregate;
+    document.getElementById('gen-section').style.display = '';
+    document.getElementById('gen-note').textContent =
+      `${g.config.generation_model} over ${g.config.retrieval} retrieval — `
+      + `${a.n_answerable} answerable + ${a.n_unanswerable} adversarial-unanswerable questions; `
+      + `total run cost $${g.total_cost_usd.toFixed(4)}.`;
+    const tiles = [
+      ['fabricated figures', pct(a.fabricated_figures_rate), a.fabricated_figures_rate===0, 'numbers in answers absent from sources — the disqualifying error'],
+      ['faithfulness (LLM judge)', a.faithful_rate==null?'—':pct(a.faithful_rate), false, 'claims supported by sources'],
+      ['citations in range', pct(a.citation_in_range_rate), false, 'answers whose [n] markers all resolve'],
+      ['correct refusals', a.refusal_correct_rate==null?'—':pct(a.refusal_correct_rate), false, 'unanswerable questions properly refused'],
+      ['key figure recall', a.key_figure_rate==null?'—':pct(a.key_figure_rate), false, 'expected figure present in the answer'],
+      ['cost per query', '$'+g.cost_per_query_usd.toFixed(4), false, 'generation + judging, measured'],
+    ];
+    document.getElementById('gen-stats').innerHTML = tiles.map(([tag,val,hero,sub])=>
+      `<div class="stage${hero?' hero':''}"><div class="tag">${tag}</div>
+       <div class="big" style="font-size:34px">${val}</div><div class="sub">${sub}</div></div>`).join('');
+  }
+
+  // Item 6 — run register
   document.getElementById('runs').innerHTML =
     '<tr><th>run</th><th>date</th><th>mode</th><th>reranker</th><th>recall@5</th><th>recall@10</th><th>MRR@10</th><th>p95</th></tr>' +
     [...runs].reverse().map(r=>`<tr>
