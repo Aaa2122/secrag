@@ -13,6 +13,8 @@ dependencies = [
     "pydantic-settings>=2.6",
     "httpx>=0.28",
     "tenacity>=9.0",
+    "sentence-transformers>=5.6.0",
+    "selectolax>=0.4.10",
 ]
 
 [dependency-groups]
