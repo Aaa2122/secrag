@@ -1,0 +1,636 @@
+{
+  "label": "hybrid-rerank-v2m3",
+  "created_at": "2026-07-09T13:50:36+00:00",
+  "git_rev": "657e921",
+  "config": {
+    "mode": "hybrid",
+    "embedder": "BAAI/bge-small-en-v1.5",
+    "reranker": "BAAI/bge-reranker-v2-m3",
+    "rerank_candidates": 30,
+    "k_values": [
+      1,
+      3,
+      5,
+      10
+    ]
+  },
+  "aggregate": {
+    "n": 52,
+    "recall@1": 0.47115384615384615,
+    "recall@3": 0.6762820512820513,
+    "recall@5": 0.7019230769230769,
+    "recall@10": 0.7467948717948718,
+    "mrr@10": 0.6221382783882784
+  },
+  "per_category": {
+    "cross_doc": {
+      "n": 8,
+      "recall@1": 0.0625,
+      "recall@3": 0.2916666666666667,
+      "recall@5": 0.2916666666666667,
+      "recall@10": 0.4166666666666667,
+      "mrr@10": 0.32514880952380953
+    },
+    "factual_numeric": {
+      "n": 23,
+      "recall@1": 0.45652173913043476,
+      "recall@3": 0.6739130434782609,
+      "recall@5": 0.717391304347826,
+      "recall@10": 0.717391304347826,
+      "mrr@10": 0.5905797101449275
+    },
+    "qualitative": {
+      "n": 21,
+      "recall@1": 0.6428571428571429,
+      "recall@3": 0.8253968253968254,
+      "recall@5": 0.8412698412698413,
+      "recall@10": 0.9047619047619048,
+      "mrr@10": 0.7698412698412699
+    }
+  },
+  "latency_ms": {
+    "embed_p50": 30.7,
+    "embed_p95": 48.8,
+    "search_p50": 78.5,
+    "search_p95": 220.8,
+    "rerank_p50": 33458.7,
+    "rerank_p95": 57210.9,
+    "total_p50": 33740.0,
+    "total_p95": 57315.4
+  },
+  "cost_per_query_usd": 0.0,
+  "per_question": [
+    {
+      "id": "aapl-01",
+      "category": "qualitative",
+      "recall": {
+        "1": 0.0,
+        "3": 0.0,
+        "5": 0.0,
+        "10": 0.0
+      },
+      "mrr": 0.0
+    },
+    {
+      "id": "aapl-02",
+      "category": "factual_numeric",
+      "recall": {
+        "1": 0.0,
+        "3": 0.0,
+        "5": 0.0,
+        "10": 0.0
+      },
+      "mrr": 0.0
+    },
+    {
+      "id": "aapl-03",
+      "category": "qualitative",
+      "recall": {
+        "1": 1.0,
+        "3": 1.0,
+        "5": 1.0,
+        "10": 1.0
+      },
+      "mrr": 1.0
+    },
+    {
+      "id": "aapl-04",
+      "category": "qualitative",
+      "recall": {
+        "1": 1.0,
+        "3": 1.0,
+        "5": 1.0,
+        "10": 1.0
+      },
+      "mrr": 1.0
+    },
+    {
+      "id": "aapl-05",
+      "category": "factual_numeric",
+      "recall": {
+        "1": 1.0,
+        "3": 1.0,
+        "5": 1.0,
+        "10": 1.0
+      },
+      "mrr": 1.0
+    },
+    {
+      "id": "amd-01",
+      "category": "factual_numeric",
+      "recall": {
+        "1": 0.0,
+        "3": 1.0,
+        "5": 1.0,
+        "10": 1.0
+      },
+      "mrr": 0.5
+    },
+    {
+      "id": "amd-02",
+      "category": "factual_numeric",
+      "recall": {
+        "1": 1.0,
+        "3": 1.0,
+        "5": 1.0,
+        "10": 1.0
+      },
+      "mrr": 1.0
+    },
+    {
+      "id": "amd-03",
+      "category": "factual_numeric",
+      "recall": {
+        "1": 1.0,
+        "3": 1.0,
+        "5": 1.0,
+        "10": 1.0
+      },
+      "mrr": 1.0
+    },
+    {
+      "id": "amd-04",
+      "category": "qualitative",
+      "recall": {
+        "1": 0.0,
+        "3": 1.0,
+        "5": 1.0,
+        "10": 1.0
+      },
+      "mrr": 0.5
+    },
+    {
+      "id": "amd-05",
+      "category": "qualitative",
+      "recall": {
+        "1": 0.0,
+        "3": 1.0,
+        "5": 1.0,
+        "10": 1.0
+      },
+      "mrr": 0.5
+    },
+    {
+      "id": "amzn-01",
+      "category": "factual_numeric",
+      "recall": {
+        "1": 1.0,
+        "3": 1.0,
+        "5": 1.0,
+        "10": 1.0
+      },
+      "mrr": 1.0
+    },
+    {
+      "id": "amzn-02",
+      "category": "factual_numeric",
+      "recall": {
+        "1": 1.0,
+        "3": 1.0,
+        "5": 1.0,
+        "10": 1.0
+      },
+      "mrr": 1.0
+    },
+    {
+      "id": "amzn-03",
+      "category": "qualitative",
+      "recall": {
+        "1": 1.0,
+        "3": 1.0,
+        "5": 1.0,
+        "10": 1.0
+      },
+      "mrr": 1.0
+    },
+    {
+      "id": "amzn-04",
+      "category": "qualitative",
+      "recall": {
+        "1": 1.0,
+        "3": 1.0,
+        "5": 1.0,
+        "10": 1.0
+      },
+      "mrr": 1.0
+    },
+    {
+      "id": "googl-01",
+      "category": "factual_numeric",
+      "recall": {
+        "1": 0.0,
+        "3": 0.0,
+        "5": 0.0,
+        "10": 0.0
+      },
+      "mrr": 0.0
+    },
+    {
+      "id": "googl-02",
+      "category": "factual_numeric",
+      "recall": {
+        "1": 0.0,
+        "3": 0.0,
+        "5": 0.0,
+        "10": 0.0
+      },
+      "mrr": 0.0
+    },
+    {
+      "id": "googl-03",
+      "category": "qualitative",
+      "recall": {
+        "1": 1.0,
+        "3": 1.0,
+        "5": 1.0,
+        "10": 1.0
+      },
+      "mrr": 1.0
+    },
+    {
+      "id": "googl-04",
+      "category": "qualitative",
+      "recall": {
+        "1": 0.0,
+        "3": 0.0,
+        "5": 0.0,
+        "10": 1.0
+      },
+      "mrr": 0.16666666666666666
+    },
+    {
+      "id": "cross-01",
+      "category": "cross_doc",
+      "recall": {
+        "1": 0.0,
+        "3": 0.0,
+        "5": 0.0,
+        "10": 0.0
+      },
+      "mrr": 0.0
+    },
+    {
+      "id": "cross-02",
+      "category": "cross_doc",
+      "recall": {
+        "1": 0.0,
+        "3": 0.5,
+        "5": 0.5,
+        "10": 0.5
+      },
+      "mrr": 0.5
+    },
+    {
+      "id": "cross-03",
+      "category": "cross_doc",
+      "recall": {
+        "1": 0.0,
+        "3": 0.5,
+        "5": 0.5,
+        "10": 0.5
+      },
+      "mrr": 0.5
+    },
+    {
+      "id": "jpm-01",
+      "category": "factual_numeric",
+      "recall": {
+        "1": 0.0,
+        "3": 0.0,
+        "5": 0.0,
+        "10": 0.0
+      },
+      "mrr": 0.0
+    },
+    {
+      "id": "jpm-02",
+      "category": "qualitative",
+      "recall": {
+        "1": 1.0,
+        "3": 1.0,
+        "5": 1.0,
+        "10": 1.0
+      },
+      "mrr": 1.0
+    },
+    {
+      "id": "jpm-03",
+      "category": "qualitative",
+      "recall": {
+        "1": 1.0,
+        "3": 1.0,
+        "5": 1.0,
+        "10": 1.0
+      },
+      "mrr": 1.0
+    },
+    {
+      "id": "jpm-04",
+      "category": "qualitative",
+      "recall": {
+        "1": 1.0,
+        "3": 1.0,
+        "5": 1.0,
+        "10": 1.0
+      },
+      "mrr": 1.0
+    },
+    {
+      "id": "meta-01",
+      "category": "factual_numeric",
+      "recall": {
+        "1": 1.0,
+        "3": 1.0,
+        "5": 1.0,
+        "10": 1.0
+      },
+      "mrr": 1.0
+    },
+    {
+      "id": "meta-02",
+      "category": "factual_numeric",
+      "recall": {
+        "1": 0.0,
+        "3": 0.0,
+        "5": 0.0,
+        "10": 0.0
+      },
+      "mrr": 0.0
+    },
+    {
+      "id": "meta-03",
+      "category": "factual_numeric",
+      "recall": {
+        "1": 0.0,
+        "3": 0.0,
+        "5": 0.0,
+        "10": 0.0
+      },
+      "mrr": 0.0
+    },
+    {
+      "id": "meta-04",
+      "category": "qualitative",
+      "recall": {
+        "1": 0.0,
+        "3": 0.3333333333333333,
+        "5": 0.6666666666666666,
+        "10": 1.0
+      },
+      "mrr": 0.5
+    },
+    {
+      "id": "msft-01",
+      "category": "factual_numeric",
+      "recall": {
+        "1": 0.0,
+        "3": 1.0,
+        "5": 1.0,
+        "10": 1.0
+      },
+      "mrr": 0.3333333333333333
+    },
+    {
+      "id": "msft-02",
+      "category": "factual_numeric",
+      "recall": {
+        "1": 0.0,
+        "3": 0.0,
+        "5": 1.0,
+        "10": 1.0
+      },
+      "mrr": 0.25
+    },
+    {
+      "id": "msft-03",
+      "category": "qualitative",
+      "recall": {
+        "1": 0.0,
+        "3": 1.0,
+        "5": 1.0,
+        "10": 1.0
+      },
+      "mrr": 0.5
+    },
+    {
+      "id": "msft-04",
+      "category": "qualitative",
+      "recall": {
+        "1": 1.0,
+        "3": 1.0,
+        "5": 1.0,
+        "10": 1.0
+      },
+      "mrr": 1.0
+    },
+    {
+      "id": "nvda-01",
+      "category": "factual_numeric",
+      "recall": {
+        "1": 0.0,
+        "3": 1.0,
+        "5": 1.0,
+        "10": 1.0
+      },
+      "mrr": 0.5
+    },
+    {
+      "id": "nvda-02",
+      "category": "factual_numeric",
+      "recall": {
+        "1": 0.5,
+        "3": 0.5,
+        "5": 0.5,
+        "10": 0.5
+      },
+      "mrr": 1.0
+    },
+    {
+      "id": "nvda-03",
+      "category": "factual_numeric",
+      "recall": {
+        "1": 0.0,
+        "3": 1.0,
+        "5": 1.0,
+        "10": 1.0
+      },
+      "mrr": 0.5
+    },
+    {
+      "id": "nvda-04",
+      "category": "qualitative",
+      "recall": {
+        "1": 0.5,
+        "3": 1.0,
+        "5": 1.0,
+        "10": 1.0
+      },
+      "mrr": 1.0
+    },
+    {
+      "id": "nvda-05",
+      "category": "qualitative",
+      "recall": {
+        "1": 0.0,
+        "3": 0.0,
+        "5": 0.0,
+        "10": 0.0
+      },
+      "mrr": 0.0
+    },
+    {
+      "id": "tsla-01",
+      "category": "factual_numeric",
+      "recall": {
+        "1": 0.0,
+        "3": 1.0,
+        "5": 1.0,
+        "10": 1.0
+      },
+      "mrr": 0.5
+    },
+    {
+      "id": "tsla-02",
+      "category": "factual_numeric",
+      "recall": {
+        "1": 1.0,
+        "3": 1.0,
+        "5": 1.0,
+        "10": 1.0
+      },
+      "mrr": 1.0
+    },
+    {
+      "id": "tsla-03",
+      "category": "factual_numeric",
+      "recall": {
+        "1": 1.0,
+        "3": 1.0,
+        "5": 1.0,
+        "10": 1.0
+      },
+      "mrr": 1.0
+    },
+    {
+      "id": "tsla-04",
+      "category": "qualitative",
+      "recall": {
+        "1": 1.0,
+        "3": 1.0,
+        "5": 1.0,
+        "10": 1.0
+      },
+      "mrr": 1.0
+    },
+    {
+      "id": "tsla-05",
+      "category": "qualitative",
+      "recall": {
+        "1": 1.0,
+        "3": 1.0,
+        "5": 1.0,
+        "10": 1.0
+      },
+      "mrr": 1.0
+    },
+    {
+      "id": "cross-04",
+      "category": "cross_doc",
+      "recall": {
+        "1": 0.0,
+        "3": 0.0,
+        "5": 0.0,
+        "10": 0.5
+      },
+      "mrr": 0.14285714285714285
+    },
+    {
+      "id": "cross-05",
+      "category": "cross_doc",
+      "recall": {
+        "1": 0.0,
+        "3": 0.3333333333333333,
+        "5": 0.3333333333333333,
+        "10": 0.3333333333333333
+      },
+      "mrr": 0.3333333333333333
+    },
+    {
+      "id": "cross-06",
+      "category": "cross_doc",
+      "recall": {
+        "1": 0.0,
+        "3": 0.0,
+        "5": 0.0,
+        "10": 0.5
+      },
+      "mrr": 0.125
+    },
+    {
+      "id": "cross-07",
+      "category": "cross_doc",
+      "recall": {
+        "1": 0.5,
+        "3": 1.0,
+        "5": 1.0,
+        "10": 1.0
+      },
+      "mrr": 1.0
+    },
+    {
+      "id": "xom-01",
+      "category": "factual_numeric",
+      "recall": {
+        "1": 1.0,
+        "3": 1.0,
+        "5": 1.0,
+        "10": 1.0
+      },
+      "mrr": 1.0
+    },
+    {
+      "id": "xom-02",
+      "category": "factual_numeric",
+      "recall": {
+        "1": 1.0,
+        "3": 1.0,
+        "5": 1.0,
+        "10": 1.0
+      },
+      "mrr": 1.0
+    },
+    {
+      "id": "xom-03",
+      "category": "qualitative",
+      "recall": {
+        "1": 1.0,
+        "3": 1.0,
+        "5": 1.0,
+        "10": 1.0
+      },
+      "mrr": 1.0
+    },
+    {
+      "id": "xom-04",
+      "category": "qualitative",
+      "recall": {
+        "1": 1.0,
+        "3": 1.0,
+        "5": 1.0,
+        "10": 1.0
+      },
+      "mrr": 1.0
+    },
+    {
+      "id": "cross-08",
+      "category": "cross_doc",
+      "recall": {
+        "1": 0.0,
+        "3": 0.0,
+        "5": 0.0,
+        "10": 0.0
+      },
+      "mrr": 0.0
+    }
+  ]
+}

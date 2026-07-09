@@ -65,13 +65,26 @@ qualitative, cross-document and unanswerable categories. References are
 re-chunking. Full runs in [evals/results/](evals/results/), one line per run in
 [evals/CHANGELOG.md](evals/CHANGELOG.md).
 
-<!-- EVALS_TABLE -->
+| run | recall@1 | recall@5 | recall@10 | MRR@10 | total p95 | $/query |
+|---|---|---|---|---|---|---|
+| ① vector-baseline | 0.266 | 0.484 | 0.580 | 0.424 | 70 ms | $0 |
+| ② hybrid-rrf | 0.324 | 0.535 | 0.638 | 0.473 | 69 ms | $0 |
+| ③ hybrid-rerank-v2m3 | **0.474** | **0.702** | 0.747 | **0.622** | 57.3 s | $0 |
 
-Reading: hybrid full-text+vector fusion buys ~5 points of recall over pure
-vector at zero latency cost — exact terms ("162%", "$40.4 billion", product
-names) are where embeddings alone miss. The cross-encoder buys precision at the
-top of the ranking (MRR, recall@5); its CPU latency cost is reported honestly
-above, per query, no GPU required.
+Reading, honestly:
+
+- **Hybrid fusion is free quality** — +5.1 pts recall@5 over pure vector at
+  identical latency. Exact terms ("162%", "$40.4 billion", product names) are
+  where embeddings alone miss and `tsvector` shines.
+- **The reranker is the headline** — +16.7 pts recall@5 and +14.9 pts MRR over
+  hybrid. Per category: qualitative 0.841, factual-numeric 0.717.
+- **Its cost is real**: p50 33.5 s / p95 57.2 s per query for 30 candidates on
+  CPU-only hardware. Mitigations, in order: GPU (two orders of magnitude),
+  a smaller cross-encoder, or reranking top-10 — each re-measurable here.
+- **Cross-document questions stay hard** (recall@5 0.292): a single fused
+  ranking rarely surfaces chunks from *two* filings in five slots. The fix is
+  query decomposition / per-ticker sub-retrieval, not a better reranker —
+  scoped as future work.
 
 ## Design notes
 
