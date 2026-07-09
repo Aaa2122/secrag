@@ -43,8 +43,9 @@ select = ["E", "F", "I", "UP", "B", "SIM"]
 asyncio_mode = "auto"
 asyncio_default_test_loop_scope = "session"
 testpaths = ["tests"]
-addopts = "-m 'not live'"
+addopts = "-m 'not live and not heavy'"
 markers = [
     "integration: needs the compose Postgres running",
     "live: performs real network calls to SEC EDGAR",
+    "heavy: downloads/loads multi-GB models (reranker)",
 ]
