@@ -24,6 +24,15 @@ generation: Claude API · observability: Langfuse
 
 ## Quickstart
 
+Configuration lives in `.env` (all optional except the API key for generation):
+
+```
+DATABASE_URL=postgresql+asyncpg://secrag:secrag@localhost:5433/secrag   # default
+SEC_USER_AGENT=your-app/0.1 (you@example.com)   # SEC fair-access identity
+ANTHROPIC_API_KEY=sk-ant-...                    # only needed for /ask generation
+GENERATION_MODEL=claude-haiku-4-5               # any Claude model id
+```
+
 ```bash
 docker compose up -d db          # Postgres 17 + pgvector on :5433
 uv sync
