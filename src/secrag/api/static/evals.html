@@ -1,0 +1,252 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>secrag — Evaluation Record</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,300..700;1,6..72,300..700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#f7f4ec; --ink:#191713; --ink-soft:#57503f; --rule:#19171326;
+  --stamp:#8f2d1e; --gain:#1f6f43; --panel:#fffdf7; --mono:'IBM Plex Mono',monospace;
+  --serif:'Newsreader',serif;
+}
+*{box-sizing:border-box;margin:0}
+html{background:var(--paper)}
+body{
+  font-family:var(--serif); color:var(--ink); line-height:1.55;
+  background:
+    radial-gradient(1200px 500px at 80% -10%, #e9e2cf66, transparent 60%),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)' opacity='.035'/%3E%3C/svg%3E");
+  min-height:100vh;
+}
+.sheet{max-width:1020px;margin:0 auto;padding:48px 28px 90px}
+a{color:inherit}
+.mono{font-family:var(--mono)}
+
+/* Masthead — 10-K cover page pastiche */
+header{border-bottom:3px double var(--ink);padding-bottom:22px;animation:rise .6s ease both}
+.eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--ink-soft);display:flex;justify-content:space-between;flex-wrap:wrap;gap:6px}
+h1{font-size:clamp(40px,6vw,64px);font-weight:500;letter-spacing:-.01em;margin:10px 0 4px;font-optical-sizing:auto}
+h1 em{font-style:italic;color:var(--stamp)}
+.subtitle{font-size:18px;font-style:italic;color:var(--ink-soft);max-width:60ch}
+.stamp{
+  float:right;margin-left:18px;padding:10px 14px;border:2px solid var(--stamp);color:var(--stamp);
+  font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;text-align:center;
+  transform:rotate(3deg);border-radius:3px;box-shadow:0 1px 0 #8f2d1e33 inset;user-select:none
+}
+.stamp b{display:block;font-size:15px;letter-spacing:.2em}
+
+nav{margin-top:14px;font-family:var(--mono);font-size:12px;letter-spacing:.06em}
+nav a{margin-right:18px;text-decoration:none;border-bottom:1px solid var(--rule);padding-bottom:2px}
+nav a:hover{color:var(--stamp);border-color:var(--stamp)}
+nav a.here{color:var(--stamp);border-color:var(--stamp)}
+
+/* Item sections */
+section{margin-top:52px;animation:rise .6s ease both}
+section:nth-of-type(2){animation-delay:.08s}section:nth-of-type(3){animation-delay:.16s}
+section:nth-of-type(4){animation-delay:.24s}section:nth-of-type(5){animation-delay:.3s}
+.item-label{font-family:var(--mono);font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--stamp);margin-bottom:6px}
+h2{font-size:26px;font-weight:500;margin-bottom:14px}
+.note{font-size:15px;color:var(--ink-soft);max-width:72ch}
+
+/* Headline: three-stage progression */
+.stages{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:1px;background:var(--rule);border:1px solid var(--rule);margin-top:18px}
+.stage{background:var(--panel);padding:20px 20px 16px;position:relative}
+.stage .tag{font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-soft)}
+.stage .big{font-family:var(--mono);font-size:44px;font-weight:600;letter-spacing:-.03em;margin:6px 0 2px}
+.stage .delta{font-family:var(--mono);font-size:12px;color:var(--gain);font-weight:600}
+.stage .sub{font-family:var(--mono);font-size:11px;color:var(--ink-soft)}
+.stage.hero{outline:2px solid var(--stamp);outline-offset:-2px}
+.stage.hero .big{color:var(--stamp)}
+.stage.pending .big{color:var(--ink-soft);font-size:24px;padding:12px 0}
+
+/* Bars */
+.bars{margin-top:16px;border:1px solid var(--rule);background:var(--panel);padding:18px 20px}
+.bar-row{display:grid;grid-template-columns:120px 1fr 64px;align-items:center;gap:12px;padding:5px 0}
+.bar-row .lbl{font-family:var(--mono);font-size:12px;color:var(--ink-soft)}
+.bar-track{height:14px;background:#19171310;position:relative}
+.bar-fill{height:100%;width:0;transition:width .9s cubic-bezier(.2,.7,.2,1)}
+.bar-row .val{font-family:var(--mono);font-size:12px;text-align:right;font-weight:600}
+.legend{display:flex;gap:18px;margin-bottom:10px;font-family:var(--mono);font-size:11px;color:var(--ink-soft);flex-wrap:wrap}
+.chip{display:inline-block;width:10px;height:10px;margin-right:6px;vertical-align:-1px}
+.k-group{margin-top:14px}
+.k-group h4{font-family:var(--mono);font-size:12px;letter-spacing:.1em;color:var(--ink-soft);margin-bottom:4px}
+
+/* Tables */
+table{width:100%;border-collapse:collapse;background:var(--panel);border:1px solid var(--rule);font-size:14px}
+th{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft);font-weight:500;text-align:right;padding:10px 12px;border-bottom:2px solid var(--ink)}
+th:first-child,td:first-child{text-align:left}
+td{padding:9px 12px;border-bottom:1px solid var(--rule);font-family:var(--mono);font-size:13px;text-align:right;font-variant-numeric:tabular-nums}
+td:first-child{font-family:var(--serif);font-size:15px}
+tr:hover td{background:#8f2d1e08}
+.run-label{font-weight:600}
+.run-meta{color:var(--ink-soft);font-family:var(--mono);font-size:11px}
+
+footer{margin-top:70px;border-top:1px solid var(--rule);padding-top:16px;font-family:var(--mono);font-size:11px;color:var(--ink-soft);letter-spacing:.04em}
+@keyframes rise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+@media (max-width:640px){.stamp{float:none;margin:14px 0 0;display:inline-block}}
+</style>
+</head>
+<body>
+<div class="sheet">
+<header>
+  <div class="stamp"><b>EVAL-K</b>annual evaluation record</div>
+  <div class="eyebrow"><span>United States · Securities Filings Retrieval Laboratory</span><span id="asof"></span></div>
+  <h1>secrag <em>Evaluation Record</em></h1>
+  <p class="subtitle">Pursuant to nothing but engineering honesty: retrieval quality, latency and cost,
+  measured on a quote-anchored golden dataset and versioned in git.</p>
+  <nav><a href="/">Ask the filings</a><a class="here" href="/evals">Evals</a><a href="https://github.com/Aaa2122/secrag">Repository</a></nav>
+</header>
+
+<section>
+  <div class="item-label">Item 1.</div>
+  <h2>Headline result — recall@5, before and after</h2>
+  <p class="note">Same 52 answerable questions, three retrieval configurations. Hybrid fuses pgvector
+  cosine search with Postgres full-text via reciprocal rank fusion; reranking re-orders the hybrid
+  top-30 with a local cross-encoder (bge-reranker-v2-m3, CPU).</p>
+  <div class="stages" id="stages"></div>
+</section>
+
+<section>
+  <div class="item-label">Item 2.</div>
+  <h2>Recall at k</h2>
+  <div class="bars">
+    <div class="legend" id="legend"></div>
+    <div id="bars"></div>
+  </div>
+</section>
+
+<section>
+  <div class="item-label">Item 3.</div>
+  <h2>Latency &amp; cost, per stage</h2>
+  <p class="note">Wall-clock per query on CPU-only hardware — no GPU anywhere in the stack.
+  The retrieval path calls no paid API: embedding and reranking are local models, so retrieval
+  cost per query is $0. Generation cost is metered separately at the /ask endpoint.</p>
+  <div style="overflow-x:auto;margin-top:14px"><table id="latency"></table></div>
+</section>
+
+<section>
+  <div class="item-label">Item 4.</div>
+  <h2>Results by question category</h2>
+  <div style="overflow-x:auto;margin-top:14px"><table id="categories"></table></div>
+</section>
+
+<section>
+  <div class="item-label">Item 5.</div>
+  <h2>Run register</h2>
+  <p class="note">Every run is a committed JSON file; this table is read from those artifacts.</p>
+  <div style="overflow-x:auto;margin-top:14px"><table id="runs"></table></div>
+</section>
+
+<footer>
+  Methodology: 58 questions over 10 issuers × 2 fiscal years (52 answerable, 6 adversarial-unanswerable);
+  references are verbatim quotes resolved to chunk ids at eval time, so the dataset survives re-chunking.
+  Embedder bge-small-en-v1.5 (384d) · corpus 19 filings / 8,001 chunks · source of truth: evals/results/*.json
+</footer>
+</div>
+
+<script>
+const K = [1,3,5,10];
+const INKS = {vector:'#57503f', hybrid:'#1f6f43', rerank:'#8f2d1e'};
+const fmt = v => (v==null ? '—' : v.toFixed(3));
+const pct = v => (v*100).toFixed(1)+'%';
+
+function stageName(run){
+  if (run.config.reranker) return 'rerank';
+  return run.config.mode === 'hybrid' ? 'hybrid' : 'vector';
+}
+function latestPerStage(runs){
+  const out = {};
+  for (const r of runs) out[stageName(r)] = r;   // runs sorted ascending → keep latest
+  return out;
+}
+
+async function main(){
+  const runs = await (await fetch('/evals/data')).json();
+  document.getElementById('asof').textContent =
+    'As of ' + (runs.length ? runs[runs.length-1].created_at.slice(0,10) : '—');
+  const st = latestPerStage(runs);
+  const order = ['vector','hybrid','rerank'];
+  const titles = {vector:'① Vector only', hybrid:'② + Full-text (RRF)', rerank:'③ + Reranker'};
+
+  // Item 1 — stages
+  const stages = document.getElementById('stages');
+  let prev = null;
+  for (const s of order){
+    const r = st[s];
+    const el = document.createElement('div');
+    if (!r){
+      el.className = 'stage pending';
+      el.innerHTML = `<div class="tag">${titles[s]}</div><div class="big">run pending</div>`;
+    } else {
+      const v = r.aggregate['recall@5'];
+      const d = prev==null ? '' :
+        `<span class="delta">${v-prev>=0?'+':''}${((v-prev)*100).toFixed(1)} pts</span>`;
+      el.className = 'stage' + (s==='rerank' ? ' hero' : '');
+      el.innerHTML = `<div class="tag">${titles[s]}</div>
+        <div class="big">${pct(v)}</div>
+        <div class="sub">recall@5 · MRR@10 ${fmt(r.aggregate['mrr@10'])} ${d}</div>`;
+      prev = v;
+    }
+    stages.appendChild(el);
+  }
+
+  // Item 2 — bars per k
+  const legend = document.getElementById('legend');
+  for (const s of order){ if (st[s]) legend.innerHTML +=
+    `<span><span class="chip" style="background:${INKS[s]}"></span>${titles[s]}</span>`; }
+  const bars = document.getElementById('bars');
+  for (const k of K){
+    const g = document.createElement('div'); g.className = 'k-group';
+    g.innerHTML = `<h4>recall@${k}</h4>`;
+    for (const s of order){
+      const r = st[s]; if (!r) continue;
+      const v = r.aggregate['recall@'+k];
+      g.innerHTML += `<div class="bar-row"><span class="lbl">${s}</span>
+        <div class="bar-track"><div class="bar-fill" data-w="${v*100}" style="background:${INKS[s]}"></div></div>
+        <span class="val">${fmt(v)}</span></div>`;
+    }
+    bars.appendChild(g);
+  }
+  requestAnimationFrame(()=>requestAnimationFrame(()=>{
+    document.querySelectorAll('.bar-fill').forEach(b=>b.style.width=b.dataset.w+'%');
+  }));
+
+  // Item 3 — latency
+  const lat = document.getElementById('latency');
+  const stagesWithRuns = order.filter(s=>st[s]);
+  lat.innerHTML = '<tr><th>configuration</th><th>embed p50</th><th>search p50</th><th>rerank p50</th><th>total p50</th><th>total p95</th><th>$/query</th></tr>' +
+    stagesWithRuns.map(s=>{ const r=st[s], L=r.latency_ms; return `<tr>
+      <td>${titles[s]}</td><td>${L.embed_p50} ms</td><td>${L.search_p50} ms</td>
+      <td>${L.rerank_p50!=null?L.rerank_p50+' ms':'—'}</td>
+      <td>${L.total_p50} ms</td><td>${L.total_p95} ms</td>
+      <td>$${r.cost_per_query_usd.toFixed(4)}</td></tr>`;}).join('');
+
+  // Item 4 — categories (latest best run)
+  const best = st.rerank || st.hybrid || st.vector;
+  if (best){
+    const cats = Object.entries(best.per_category);
+    document.getElementById('categories').innerHTML =
+      `<tr><th>category (${best.label})</th><th>n</th>${K.map(k=>`<th>recall@${k}</th>`).join('')}<th>MRR@10</th></tr>` +
+      cats.map(([c,a])=>`<tr><td>${c.replace('_',' ')}</td><td>${a.n}</td>` +
+        K.map(k=>`<td>${fmt(a['recall@'+k])}</td>`).join('') +
+        `<td>${fmt(a['mrr@10'])}</td></tr>`).join('');
+  }
+
+  // Item 5 — run register
+  document.getElementById('runs').innerHTML =
+    '<tr><th>run</th><th>date</th><th>mode</th><th>reranker</th><th>recall@5</th><th>recall@10</th><th>MRR@10</th><th>p95</th></tr>' +
+    [...runs].reverse().map(r=>`<tr>
+      <td><span class="run-label">${r.label}</span><br><span class="run-meta">${r.git_rev}</span></td>
+      <td>${r.created_at.slice(0,10)}</td><td>${r.config.mode}</td>
+      <td>${r.config.reranker ? r.config.reranker.split('/').pop() : '—'}</td>
+      <td>${fmt(r.aggregate['recall@5'])}</td><td>${fmt(r.aggregate['recall@10'])}</td>
+      <td>${fmt(r.aggregate['mrr@10'])}</td><td>${r.latency_ms.total_p95} ms</td></tr>`).join('');
+}
+main();
+</script>
+</body>
+</html>

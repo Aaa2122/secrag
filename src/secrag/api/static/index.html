@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>secrag — Ask the filings</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,300..700;1,6..72,300..700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#f7f4ec; --ink:#191713; --ink-soft:#57503f; --rule:#19171326;
+  --stamp:#8f2d1e; --gain:#1f6f43; --panel:#fffdf7; --mono:'IBM Plex Mono',monospace;
+  --serif:'Newsreader',serif;
+}
+*{box-sizing:border-box;margin:0}
+html{background:var(--paper)}
+body{
+  font-family:var(--serif);color:var(--ink);line-height:1.6;min-height:100vh;
+  background:
+    radial-gradient(1200px 500px at 80% -10%, #e9e2cf66, transparent 60%),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)' opacity='.035'/%3E%3C/svg%3E");
+}
+.sheet{max-width:880px;margin:0 auto;padding:44px 24px 90px}
+header{border-bottom:3px double var(--ink);padding-bottom:18px;animation:rise .5s ease both}
+.eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--ink-soft)}
+h1{font-size:clamp(34px,5.4vw,52px);font-weight:500;margin:8px 0 2px}
+h1 em{font-style:italic;color:var(--stamp)}
+.subtitle{font-style:italic;color:var(--ink-soft)}
+nav{margin-top:12px;font-family:var(--mono);font-size:12px}
+nav a{margin-right:18px;text-decoration:none;border-bottom:1px solid var(--rule);padding-bottom:2px;color:inherit}
+nav a:hover,nav a.here{color:var(--stamp);border-color:var(--stamp)}
+
+.ask{margin-top:34px;animation:rise .5s ease both .08s}
+.tickers{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}
+.tick{
+  font-family:var(--mono);font-size:12px;letter-spacing:.06em;padding:5px 11px;cursor:pointer;
+  border:1px solid var(--rule);background:var(--panel);user-select:none;transition:all .15s
+}
+.tick:hover{border-color:var(--ink)}
+.tick.on{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.qrow{display:flex;gap:10px}
+input[type=text]{
+  flex:1;font-family:var(--mono);font-size:15px;padding:13px 14px;border:1px solid var(--ink);
+  background:var(--panel);color:var(--ink);outline:none
+}
+input[type=text]:focus{box-shadow:3px 3px 0 #8f2d1e33}
+button{
+  font-family:var(--mono);font-size:13px;letter-spacing:.1em;text-transform:uppercase;
+  padding:0 22px;border:1px solid var(--stamp);background:var(--stamp);color:#fff;cursor:pointer
+}
+button:hover{background:#7a2517}
+button:disabled{opacity:.5;cursor:wait}
+.opts{margin-top:10px;font-family:var(--mono);font-size:12px;color:var(--ink-soft);display:flex;gap:18px;align-items:center}
+.opts label{cursor:pointer}
+.suggest{margin-top:10px;font-size:14px;color:var(--ink-soft)}
+.suggest a{cursor:pointer;border-bottom:1px dotted var(--ink-soft);margin-right:14px;font-style:italic}
+.suggest a:hover{color:var(--stamp)}
+
+.answer-wrap{margin-top:36px;display:none}
+.answer-wrap.show{display:block;animation:rise .4s ease both}
+.item-label{font-family:var(--mono);font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--stamp);margin-bottom:8px}
+.answer{
+  background:var(--panel);border:1px solid var(--rule);padding:22px 24px;font-size:17px;min-height:64px
+}
+.answer sup{
+  font-family:var(--mono);font-size:10px;background:var(--stamp);color:#fff;
+  padding:1px 5px;margin:0 1px;border-radius:2px;cursor:pointer
+}
+.answer .caret{display:inline-block;width:9px;height:18px;background:var(--stamp);vertical-align:-3px;animation:blink 1s steps(1) infinite}
+.meta{margin-top:8px;font-family:var(--mono);font-size:11px;color:var(--ink-soft)}
+.warn{background:#8f2d1e10;border:1px solid #8f2d1e55;padding:12px 16px;font-size:14px;margin-top:10px}
+
+.sources{margin-top:26px}
+details{background:var(--panel);border:1px solid var(--rule);margin-bottom:8px}
+summary{
+  cursor:pointer;padding:10px 14px;font-family:var(--mono);font-size:12px;display:flex;gap:10px;align-items:center
+}
+summary::-webkit-details-marker{display:none}
+summary .n{background:var(--ink);color:var(--paper);padding:1px 7px;font-weight:600}
+details[open] summary .n{background:var(--stamp)}
+summary .lbl{font-weight:600}
+summary .score{margin-left:auto;color:var(--ink-soft)}
+.src-body{padding:4px 16px 16px;font-size:14px;color:var(--ink-soft);white-space:pre-wrap;border-top:1px dashed var(--rule)}
+footer{margin-top:70px;border-top:1px solid var(--rule);padding-top:14px;font-family:var(--mono);font-size:11px;color:var(--ink-soft)}
+@keyframes rise{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+@keyframes blink{50%{opacity:0}}
+</style>
+</head>
+<body>
+<div class="sheet">
+<header>
+  <div class="eyebrow">Production RAG over SEC annual reports</div>
+  <h1>Ask the <em>filings</em></h1>
+  <p class="subtitle">Ten issuers, two fiscal years, 8,001 chunks — every answer cites its source, every number is verbatim.</p>
+  <nav><a class="here" href="/">Ask the filings</a><a href="/evals">Evals</a><a href="https://github.com/Aaa2122/secrag">Repository</a></nav>
+</header>
+
+<div class="ask">
+  <div class="tickers" id="tickers"></div>
+  <div class="qrow">
+    <input id="q" type="text" placeholder="e.g. How much stock did NVIDIA repurchase in fiscal 2026?" autofocus>
+    <button id="go">Ask</button>
+  </div>
+  <div class="opts">
+    <label><input type="checkbox" id="rerank"> rerank top-30 with cross-encoder (CPU — adds ~a minute, better precision)</label>
+  </div>
+  <div class="suggest" id="suggest"></div>
+</div>
+
+<div class="answer-wrap" id="wrap">
+  <div class="item-label">Answer</div>
+  <div class="answer" id="answer"></div>
+  <div class="meta" id="meta"></div>
+  <div class="sources" id="sources"></div>
+</div>
+
+<footer>Corpus: 10-K filings retrieved from SEC EDGAR under its fair-access policy · retrieval is local &amp; $0/query · methodology on the <a href="/evals">evals page</a></footer>
+</div>
+
+<script>
+const TICKERS = ["AAPL","AMD","AMZN","GOOGL","JPM","META","MSFT","NVDA","TSLA","XOM"];
+const SUGGESTIONS = [
+  "How much stock did NVIDIA repurchase in fiscal 2026?",
+  "Compare Apple and Amazon supplier dependence.",
+  "Why did Microsoft's gross margin percentage decrease in FY2025?",
+  "What does JPMorgan say about quantum computing threats?",
+];
+const on = new Set();
+const tickersEl = document.getElementById('tickers');
+for (const t of TICKERS){
+  const b = document.createElement('span'); b.className='tick'; b.textContent=t;
+  b.onclick = ()=>{ on.has(t) ? on.delete(t) : on.add(t); b.classList.toggle('on'); };
+  tickersEl.appendChild(b);
+}
+const sg = document.getElementById('suggest');
+sg.innerHTML = 'Try: ' + SUGGESTIONS.map((s,i)=>`<a data-i="${i}">${s}</a>`).join('');
+sg.onclick = e => { if(e.target.dataset.i!=null){ document.getElementById('q').value = SUGGESTIONS[e.target.dataset.i]; go(); } };
+
+const qEl = document.getElementById('q'), goBtn = document.getElementById('go');
+const wrap = document.getElementById('wrap'), ansEl = document.getElementById('answer');
+const metaEl = document.getElementById('meta'), srcEl = document.getElementById('sources');
+let es = null, raw = '';
+
+function renderAnswer(streaming){
+  const safe = raw.replace(/&/g,'&amp;').replace(/</g,'&lt;');
+  ansEl.innerHTML = safe.replace(/\[(\d+)\]/g,'<sup title="source $1">$1</sup>')
+    + (streaming ? '<span class="caret"></span>' : '');
+}
+function go(){
+  const q = qEl.value.trim(); if (q.length < 3) return;
+  if (es) es.close();
+  raw = ''; renderAnswer(true);
+  wrap.classList.add('show'); metaEl.textContent=''; srcEl.innerHTML='';
+  goBtn.disabled = true;
+  const p = new URLSearchParams({q, k:'5', rerank: document.getElementById('rerank').checked});
+  for (const t of on) p.append('tickers', t);
+  es = new EventSource('/ask?' + p.toString());
+  es.addEventListener('sources', e=>{
+    const d = JSON.parse(e.data);
+    metaEl.textContent = 'retrieval: ' + Object.entries(d.timing_ms).map(([k,v])=>`${k} ${v}ms`).join(' · ');
+    srcEl.innerHTML = '<div class="item-label">Sources</div>' + d.sources.map(s=>`
+      <details><summary><span class="n">${s.n}</span><span class="lbl">${s.label}</span><span class="score">chunk #${s.chunk_id}</span></summary>
+      <div class="src-body">${s.content.replace(/&/g,'&amp;').replace(/</g,'&lt;')}</div></details>`).join('');
+  });
+  es.addEventListener('token', e=>{ raw += JSON.parse(e.data).text; renderAnswer(true); });
+  es.addEventListener('done', e=>{
+    const d = JSON.parse(e.data); renderAnswer(false);
+    metaEl.textContent += ` · ${d.model} · ${d.input_tokens}→${d.output_tokens} tok` +
+      (d.cost_usd!=null ? ` · $${d.cost_usd.toFixed(4)}` : '');
+    es.close(); goBtn.disabled = false;
+  });
+  const degrade = ()=>{
+    es.close(); goBtn.disabled = false; renderAnswer(false);
+    if (!raw) ansEl.innerHTML = '<div class="warn">Generation is offline (no API key configured on the server).'
+      + ' Retrieval still works — the sources below are the live top-k for your question.</div>';
+  };
+  es.addEventListener('gen_error', degrade);
+  es.onerror = degrade;
+}
+goBtn.onclick = go;
+qEl.addEventListener('keydown', e=>{ if(e.key==='Enter') go(); });
+</script>
+</body>
+</html>

@@ -1,9 +1,11 @@
 import json
+import logging
 import time
+from pathlib import Path
 from typing import Annotated, Literal
 
 from fastapi import Depends, FastAPI, Query
-from fastapi.responses import StreamingResponse
+from fastapi.responses import FileResponse, StreamingResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from secrag import __version__, generation
@@ -14,7 +16,34 @@ from secrag.embedding import Embedder, get_embedder
 from secrag.rerank import get_reranker
 from secrag.retrieval.search import SearchFilters, hybrid_search, rerank_results, vector_search
 
+log = logging.getLogger(__name__)
+
 app = FastAPI(title="secrag", version=__version__)
+
+STATIC_DIR = Path(__file__).parent / "static"
+RESULTS_DIR = Path("evals/results")
+
+
+@app.get("/", include_in_schema=False)
+def home() -> FileResponse:
+    return FileResponse(STATIC_DIR / "index.html")
+
+
+@app.get("/evals", include_in_schema=False)
+def evals_page() -> FileResponse:
+    return FileResponse(STATIC_DIR / "evals.html")
+
+
+@app.get("/evals/data")
+def evals_data() -> list[dict]:
+    """Committed eval runs (aggregates only), oldest first."""
+    runs = []
+    for path in RESULTS_DIR.glob("*.json"):
+        run = json.loads(path.read_text(encoding="utf-8"))
+        run.pop("per_question", None)
+        runs.append(run)
+    runs.sort(key=lambda r: r["created_at"])
+    return runs
 
 
 async def get_session():
@@ -118,10 +147,16 @@ async def ask(
             },
         )
         # generation.generate_answer is monkeypatched in tests (no API key needed).
-        async for event in generation.generate_answer(q, results):
-            if event["type"] == "token":
-                yield _sse("token", {"text": event["text"]})
-            else:
-                yield _sse("done", event)
+        try:
+            async for event in generation.generate_answer(q, results):
+                if event["type"] == "token":
+                    yield _sse("token", {"text": event["text"]})
+                else:
+                    yield _sse("done", event)
+        except Exception as exc:
+            # Sources were already streamed; degrade to retrieval-only instead
+            # of killing the connection. Details stay in server logs.
+            log.exception("generation failed")
+            yield _sse("gen_error", {"error": type(exc).__name__})
 
     return StreamingResponse(stream(), media_type="text/event-stream")
