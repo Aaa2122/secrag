@@ -3,17 +3,21 @@ import json
 from secrag.evals.gate import check, load_runs
 
 RET_OK = {
-    "label": "r1", "created_at": "2026-07-09T01:00:00+00:00",
+    "label": "r1",
+    "created_at": "2026-07-09T01:00:00+00:00",
     "config": {"reranker": "BAAI/bge-reranker-v2-m3"},
     "aggregate": {"recall@5": 0.70, "mrr@10": 0.62},
 }
 RET_OLD_VECTOR = {
-    "label": "v1", "created_at": "2026-07-09T00:00:00+00:00",
+    "label": "v1",
+    "created_at": "2026-07-09T00:00:00+00:00",
     "config": {"reranker": None},
     "aggregate": {"recall@5": 0.48, "mrr@10": 0.42},
 }
 GEN_OK = {
-    "label": "g1", "kind": "generation", "created_at": "2026-07-09T02:00:00+00:00",
+    "label": "g1",
+    "kind": "generation",
+    "created_at": "2026-07-09T02:00:00+00:00",
     "config": {},
     "aggregate": {
         "fabricated_figures_rate": 0.0,

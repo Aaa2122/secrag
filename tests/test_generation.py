@@ -25,6 +25,7 @@ def test_system_prompt_demands_citations_and_refusal():
     assert "[n]" in SYSTEM_PROMPT
     assert REFUSAL_SENTENCE in SYSTEM_PROMPT
     assert "no rounding" in SYSTEM_PROMPT
+    assert "derived figures" in SYSTEM_PROMPT
 
 
 def test_source_label_formats_citation_target():

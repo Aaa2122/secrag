@@ -55,8 +55,7 @@ def check(retrieval: dict | None, generation: dict | None, thresholds: dict) -> 
                     )
             elif agg[metric] is not None and agg[metric] < bound:
                 failures.append(
-                    f"generation {metric}={agg[metric]:.3f} < floor {bound}"
-                    f" ({generation['label']})"
+                    f"generation {metric}={agg[metric]:.3f} < floor {bound} ({generation['label']})"
                 )
     return failures
 

@@ -22,6 +22,7 @@ SYSTEM_PROMPT = (
     "Rules:\n"
     "- Every factual claim must cite its source with a [n] marker.\n"
     "- Copy figures exactly as written in the sources: no rounding, no unit conversion.\n"
+    "- Do not calculate or report derived figures, even when the calculation is simple.\n"
     "- If the sources do not contain the information needed to answer,"
     f' reply exactly: "{REFUSAL_SENTENCE}"\n'
     "- Never use outside knowledge, even when you are confident.\n"

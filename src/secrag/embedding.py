@@ -28,7 +28,7 @@ class LocalEmbedder:
         from sentence_transformers import SentenceTransformer
 
         self._model = SentenceTransformer(model_name or get_settings().embedding_model)
-        self.dim = self._model.get_sentence_embedding_dimension()
+        self.dim = self._model.get_embedding_dimension()
 
     def embed_passages(self, texts: list[str]) -> list[list[float]]:
         return self._model.encode(

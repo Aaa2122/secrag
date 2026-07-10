@@ -16,6 +16,11 @@ def test_extract_numbers_normalizes_and_ignores_citations():
     assert extract_numbers("grew 162%") == {"162"}
 
 
+def test_extract_numbers_ignores_ordered_list_markers_but_keeps_years():
+    text = "1. First risk\n2) Second risk\n2025. Revenue was $94,827 million"
+    assert extract_numbers(text) == {"2025", "94827"}
+
+
 def test_fabricated_numbers_flags_figures_absent_from_sources():
     sources = ["[NVDA] we repurchased 282 million shares for $40.4 billion"]
     assert fabricated_numbers("It repurchased 282 million shares [1]", sources) == set()

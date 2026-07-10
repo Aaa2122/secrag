@@ -6,9 +6,9 @@ local cross-encoder reranking, streamed answers with mandatory citations, and a
 **public evals page** (recall@k before/after reranking, latency, cost per query)
 backing every architecture decision with measurements.
 
-> Status: **retrieval core complete (Jalons 0–5)** — 19 filings ingested
-> (8,001 chunks), hybrid search + reranking, evals harness with versioned runs.
-> Next: generation with citations (Jalon 6). Full case study at Jalon 10.
+> Status: **implementation and evals complete through Jalon 10** — 19 filings
+> ingested (8,001 chunks), hybrid search + reranking, cited generation, and
+> versioned retrieval + generation evals. Public deployment awaits a VPS/domain.
 
 ## Architecture
 
@@ -95,6 +95,25 @@ Reading, honestly:
   query decomposition / per-ticker sub-retrieval, not a better reranker —
   scoped as future work.
 
+## Evals (generation)
+
+The first complete generation run covers all 58 questions (52 answerable + 6
+adversarial-unanswerable) with `claude-haiku-4-5` over hybrid+rerank retrieval.
+It cost **$0.2537 total / $0.0044 per question**, including the independent
+faithfulness judge.
+
+| faithfulness | non-verbatim figure rate | key figure recall | citations in range | correct refusals | wrongful refusals |
+|---|---|---|---|---|---|
+| **97.8%** | 7.7% | 77.4% | 92.3% | **100%** | 11.5% |
+
+The strict figure check deliberately rejects derived or reformatted values even
+when mathematically sound: e.g. `$94,827 million` rendered as `$94.827 billion`,
+or a computed `2.9%` decline. One additional flag came from numbered-list
+ordinals, an evaluator false positive now excluded in code. The published result
+is kept unchanged rather than polishing the headline after the fact; the next
+run will also use a stricter prompt against derived figures. The CI cap is
+baselined at 8% for this first run and should be tightened after that rerun.
+
 ## Design notes
 
 - **Why 10-Ks:** public domain, universally understood demo, and genuinely hard:
@@ -120,7 +139,7 @@ Reading, honestly:
 | Retrieval (vector / hybrid / rerank) | **$0 / query** | no paid API anywhere in the path |
 | Generation (`/ask`, claude-haiku-4-5) | ~$0.0015 / query | measured: 1.3k in / 40 out tokens |
 | Full retrieval eval (52 questions × 4 k-values) | $0 | re-runnable at will |
-| Full generation eval (58 gen + LLM-judge) | ~$0.2 | see `evals/CHANGELOG.md` for actuals |
+| Full generation eval (58 gen + LLM-judge) | $0.2537 | measured complete run, $0.0044/question |
 
 The model is a config switch (`GENERATION_MODEL`); the cost column on the
 evals page tracks whichever is deployed.
@@ -151,6 +170,8 @@ evals page tracks whichever is deployed.
 - **Cross-document questions** (recall@5 0.292 even reranked): query
   decomposition / per-ticker sub-retrieval, then merge — the one category a
   better ranker cannot fix.
+- **Generation numeric discipline**: require figures verbatim from sources,
+  and suppress unsupported unit conversions/derived percentages.
 - **JPM FY2024**: fetch EDGAR's additional submission pages for high-volume
   filers (corpus 19 → 20).
 - **Item re-tagging** for incorporation-by-reference filers (NVDA/JPM/XOM

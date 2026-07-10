@@ -38,6 +38,7 @@ CHECKPOINT = Path("evals/.gen-partial.jsonl")
 CITE_RE = re.compile(r"\[(\d+)\]")
 NUM_RE = re.compile(r"\d[\d,]*(?:\.\d+)?")
 PAREN_RE = re.compile(r"\([^)]*\)")
+ORDERED_LIST_MARKER_RE = re.compile(r"(?m)^\s*\d{1,2}[.)]\s+")
 
 JUDGE_SYSTEM = (
     "You grade whether an answer is faithful to its sources. Faithful means every"
@@ -48,8 +49,9 @@ JUDGE_SYSTEM = (
 
 
 def extract_numbers(text: str) -> set[str]:
-    """Normalized numeric tokens ('40.4', '56950'); citation markers stripped."""
+    """Normalized numeric tokens; citations and ordered-list markers stripped."""
     text = CITE_RE.sub(" ", text)
+    text = ORDERED_LIST_MARKER_RE.sub(" ", text)
     return {m.group().replace(",", "") for m in NUM_RE.finditer(text)}
 
 
