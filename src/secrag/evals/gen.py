@@ -30,7 +30,7 @@ from secrag.generation import (
     generate_answer,
 )
 from secrag.rerank import get_reranker
-from secrag.retrieval.search import hybrid_search, rerank_results
+from secrag.retrieval.search import decomposed_hybrid_search, rerank_results
 
 log = logging.getLogger(__name__)
 
@@ -140,14 +140,14 @@ async def run_generation_eval(label: str, rerank: bool = True) -> dict:
             if q.id in done:
                 continue
             async with factory() as session:
-                results = await hybrid_search(
+                results, scopes = await decomposed_hybrid_search(
                     session,
                     q.question,
                     embedder.embed_query(q.question),
                     k=settings.rerank_candidates if rerank else 5,
                 )
             if rerank:
-                results = rerank_results(reranker, q.question, results, k=5)
+                results = rerank_results(reranker, q.question, results, k=5, scopes=scopes)
 
             t0 = time.perf_counter()
             answer_parts: list[str] = []

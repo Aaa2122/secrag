@@ -78,7 +78,9 @@ re-chunking. Full runs in [evals/results/](evals/results/), one line per run in
 |---|---|---|---|---|---|---|
 | ① vector-baseline | 0.266 | 0.484 | 0.580 | 0.424 | 70 ms | $0 |
 | ② hybrid-rrf | 0.324 | 0.535 | 0.638 | 0.473 | 69 ms | $0 |
-| ③ hybrid-rerank-v2m3 | **0.474** | **0.702** | 0.747 | **0.622** | 57.3 s | $0 |
+| ③ hybrid-rerank-v2m3 | 0.474 | 0.702 | 0.747 | 0.622 | 57.3 s | $0 |
+| ④ hybrid-decomposed | 0.356 | 0.606 | 0.721 | 0.531 | 236 ms | $0 |
+| ⑤ decomposed+rerank | **0.478** | **0.708** | **0.763** | **0.643** | 140.3 s | $0 |
 
 Reading, honestly:
 
@@ -90,10 +92,15 @@ Reading, honestly:
 - **Its cost is real**: p50 33.5 s / p95 57.2 s per query for 30 candidates on
   CPU-only hardware. Mitigations, in order: GPU (two orders of magnitude),
   a smaller cross-encoder, or reranking top-10 — each re-measurable here.
-- **Cross-document questions stay hard** (recall@5 0.292): a single fused
-  ranking rarely surfaces chunks from *two* filings in five slots. The fix is
-  query decomposition / per-ticker sub-retrieval, not a better reranker —
-  scoped as future work.
+- **Decomposition fixes candidate coverage**: company/year detection, scoped
+  sub-retrieval and round-robin merging lift cross-document recall@5 from 0.229
+  to 0.563 before reranking (+33.3 pts), with no qualitative regression.
+- **The reranker remains the cross-document bottleneck**: after reranking,
+  cross-document recall@5 moves only 0.292 → 0.333, though its MRR improves
+  0.325 → 0.458. Scope-specific reranking is the next iteration.
+- **CPU reranking is not production-viable here**: the latest complete run
+  measured p50 66.5 s / p95 140.2 s. Hardware/runtime variance is substantial,
+  but both reranked runs point to GPU or a smaller model.
 
 ## Evals (generation)
 
@@ -167,9 +174,8 @@ evals page tracks whichever is deployed.
 
 ## Future work
 
-- **Cross-document questions** (recall@5 0.292 even reranked): query
-  decomposition / per-ticker sub-retrieval, then merge — the one category a
-  better ranker cannot fix.
+- **Scope-specific cross-document reranking**: rerank each company/year against
+  the cleaned comparison topic before merging the final top-5.
 - **Generation numeric discipline**: require figures verbatim from sources,
   and suppress unsupported unit conversions/derived percentages.
 - **JPM FY2024**: fetch EDGAR's additional submission pages for high-volume

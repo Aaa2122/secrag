@@ -16,7 +16,12 @@ from secrag.config import get_settings
 from secrag.db import session_factory
 from secrag.embedding import Embedder, get_embedder
 from secrag.rerank import get_reranker
-from secrag.retrieval.search import SearchFilters, hybrid_search, rerank_results, vector_search
+from secrag.retrieval.search import (
+    SearchFilters,
+    decomposed_hybrid_search,
+    rerank_results,
+    vector_search,
+)
 
 log = logging.getLogger(__name__)
 
@@ -90,11 +95,14 @@ async def search(
 
 async def _retrieve(session, embedder, q, mode, k, rerank, filters):
     fetch_k = get_settings().rerank_candidates if rerank else k
+    scopes = []
     t0 = time.perf_counter()
     query_embedding = embedder.embed_query(q)
     t1 = time.perf_counter()
     if mode == "hybrid":
-        results = await hybrid_search(session, q, query_embedding, k=fetch_k, filters=filters)
+        results, scopes = await decomposed_hybrid_search(
+            session, q, query_embedding, k=fetch_k, filters=filters
+        )
     else:
         results = await vector_search(session, query_embedding, k=fetch_k, filters=filters)
     t2 = time.perf_counter()
@@ -105,7 +113,7 @@ async def _retrieve(session, embedder, q, mode, k, rerank, filters):
     if rerank:
         # get_reranker is a cached singleton, loaded on first rerank=true request;
         # tests monkeypatch it to avoid the multi-GB model download.
-        results = rerank_results(get_reranker(), q, results, k=k)
+        results = rerank_results(get_reranker(), q, results, k=k, scopes=scopes)
         timing["rerank"] = round((time.perf_counter() - t2) * 1000, 2)
     return results, timing
 

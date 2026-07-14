@@ -19,7 +19,7 @@ from secrag.embedding import get_embedder
 from secrag.evals.golden import GOLDEN_PATH, load_golden, resolve_refs
 from secrag.evals.metrics import mrr_at_k, percentile, recall_at_k
 from secrag.rerank import get_reranker
-from secrag.retrieval.search import hybrid_search, rerank_results, vector_search
+from secrag.retrieval.search import decomposed_hybrid_search, rerank_results, vector_search
 
 log = logging.getLogger(__name__)
 
@@ -51,6 +51,7 @@ async def run_retrieval_eval(mode: str, label: str, rerank: bool = False) -> dic
     embed_ms: list[float] = []
     search_ms: list[float] = []
     rerank_ms: list[float] = []
+    decomposed_count = 0
     fetch_k = settings.rerank_candidates if rerank else max(K_VALUES)
 
     for q in questions:
@@ -60,15 +61,19 @@ async def run_retrieval_eval(mode: str, label: str, rerank: bool = False) -> dic
         # One short-lived session per question: with CPU reranking in between,
         # a single session would idle in transaction for minutes and get dropped.
         async with factory() as session:
+            scopes = []
             if mode == "vector":
                 results = await vector_search(session, qvec, k=fetch_k)
             elif mode == "hybrid":
-                results = await hybrid_search(session, q.question, qvec, k=fetch_k)
+                results, scopes = await decomposed_hybrid_search(
+                    session, q.question, qvec, k=fetch_k
+                )
+                decomposed_count += bool(scopes)
             else:
                 raise ValueError(f"unknown mode: {mode!r}")
         t2 = time.perf_counter()
         if rerank:
-            results = rerank_results(reranker, q.question, results, k=max(K_VALUES))
+            results = rerank_results(reranker, q.question, results, k=max(K_VALUES), scopes=scopes)
             rerank_ms.append((time.perf_counter() - t2) * 1000)
 
         retrieved = [r.chunk_id for r in results]
@@ -81,6 +86,7 @@ async def run_retrieval_eval(mode: str, label: str, rerank: bool = False) -> dic
                 "category": q.category,
                 "recall": {k: recall_at_k(relevant, retrieved, k) for k in K_VALUES},
                 "mrr": mrr_at_k(relevant, retrieved, k=10),
+                "decomposed": bool(scopes),
             }
         )
 
@@ -106,6 +112,8 @@ async def run_retrieval_eval(mode: str, label: str, rerank: bool = False) -> dic
             "embedder": settings.embedding_model,
             "reranker": settings.reranker_model if rerank else None,
             "rerank_candidates": settings.rerank_candidates if rerank else None,
+            "query_decomposition": "auto-entity-year" if mode == "hybrid" else None,
+            "decomposed_questions": decomposed_count,
             "k_values": list(K_VALUES),
         },
         "aggregate": agg(per_question),
