@@ -24,6 +24,7 @@ def test_bge_query_prefix_is_the_documented_instruction():
 
 
 @pytest.mark.integration
+@pytest.mark.heavy
 def test_local_embedder_real_model():
     from secrag.embedding import LocalEmbedder
 

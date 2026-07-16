@@ -2,6 +2,7 @@ import json
 from pathlib import Path
 
 import pytest
+from sqlalchemy import func, select
 
 from secrag.evals.golden import (
     GOLDEN_PATH,
@@ -9,6 +10,7 @@ from secrag.evals.golden import (
     load_golden,
     resolve_refs,
 )
+from secrag.models import Chunk
 
 
 def _write(tmp_path: Path, records: list[dict]) -> Path:
@@ -72,5 +74,8 @@ async def test_committed_golden_dataset_fully_resolves():
     questions = load_golden()
     assert len(questions) >= 40
     async with session_factory()() as session:
+        chunk_count = await session.scalar(select(func.count()).select_from(Chunk))
+        if not chunk_count:
+            pytest.skip("requires an ingested SEC corpus")
         resolved = await resolve_refs(session, [q for q in questions if q.answerable])
     assert all(ids for ids in resolved.values())
