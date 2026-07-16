@@ -50,5 +50,5 @@ addopts = "-m 'not live and not heavy'"
 markers = [
     "integration: needs the compose Postgres running",
     "live: performs real network calls to SEC EDGAR",
-    "heavy: downloads/loads multi-GB models (reranker)",
+    "heavy: downloads/loads local ML models",
 ]

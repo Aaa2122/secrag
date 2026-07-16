@@ -1,7 +1,7 @@
-"""Cross-encoder reranking behind a small interface.
+"""Local cross-encoder reranking behind a small interface.
 
-Local bge-reranker-v2-m3 (CPU): $0 per query; the latency cost is measured
-honestly by the evals harness instead of being hidden.
+The default MiniLM model is small enough for CPU deployment. Its quality and
+latency are measured by the evals harness instead of being assumed.
 """
 
 from functools import lru_cache
@@ -14,7 +14,7 @@ class Reranker(Protocol):
     def score(self, query: str, passages: list[str]) -> list[float]: ...
 
 
-class BgeReranker:
+class CrossEncoderReranker:
     def __init__(self, model_name: str | None = None) -> None:
         from sentence_transformers import CrossEncoder
 
@@ -27,4 +27,4 @@ class BgeReranker:
 
 @lru_cache
 def get_reranker() -> Reranker:
-    return BgeReranker()
+    return CrossEncoderReranker()

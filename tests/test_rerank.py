@@ -39,10 +39,10 @@ def test_rerank_empty_input():
 
 
 @pytest.mark.heavy
-def test_bge_reranker_scores_relevant_passage_higher():
-    from secrag.rerank import BgeReranker
+def test_cross_encoder_reranker_scores_relevant_passage_higher():
+    from secrag.rerank import CrossEncoderReranker
 
-    reranker = BgeReranker()
+    reranker = CrossEncoderReranker()
     scores = reranker.score(
         "What was NVIDIA's data center revenue growth?",
         [

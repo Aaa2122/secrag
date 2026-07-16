@@ -10,7 +10,7 @@ class Settings(BaseSettings):
     embedding_provider: str = "local"
     embedding_model: str = "BAAI/bge-small-en-v1.5"
     embedding_dim: int = 384
-    reranker_model: str = "BAAI/bge-reranker-v2-m3"
+    reranker_model: str = "cross-encoder/ms-marco-MiniLM-L6-v2"
     rerank_candidates: int = 30
     generation_model: str = "claude-opus-4-8"
     anthropic_api_key: str | None = None  # falls back to the SDK's env resolution
