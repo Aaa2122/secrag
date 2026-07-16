@@ -1,8 +1,8 @@
 # Deploying secrag
 
 The compose file ships as-is to any Linux VPS. Sizing: **4 GB RAM minimum**
-(embedder + Postgres), **8 GB recommended** if the reranker stays enabled —
-bge-reranker-v2-m3 alone holds ~2.4 GB resident.
+for Postgres, Redis, the local embedder and the lightweight MiniLM reranker;
+**8 GB recommended** for ingestion headroom.
 
 ## 1. VPS (Debian/Ubuntu) + Caddy TLS
 
@@ -14,6 +14,7 @@ cat > .env <<EOF
 SEC_USER_AGENT=secrag/0.1 (you@example.com)
 ANTHROPIC_API_KEY=sk-ant-...
 GENERATION_MODEL=claude-haiku-4-5
+RERANKER_MODEL=cross-encoder/ms-marco-MiniLM-L6-v2
 EOF
 
 docker compose up -d --build        # db + redis + api on :8000
@@ -41,10 +42,9 @@ Point an A record at the VPS; done — `https://secrag.example.com/evals` is pub
 
 ## 2. Operational notes
 
-- **Reranking on CPU is slow by design honesty** (p50 ~33 s for 30 candidates).
-  The chat UI ships with rerank **off** by default and labels the cost; the
-  evals page reports both configurations. GPU or a smaller cross-encoder are
-  the upgrade paths, re-measurable with `secrag.evals.run`.
+- **Reranking runs locally on CPU**. MiniLM-L6 measured p50 3.7 s / p95 6.2 s
+  for 30 candidates, versus p95 140.3 s for the previous BGE v2-m3 model.
+  The evals page reports both configurations.
 - **Rate limits** (per client IP, Redis): 30/min on `/search`, 10/min on
   `/ask`. Fail-open if Redis is down — the demo survives its limiter.
 - **Generation budget**: `/ask` logs tokens + cost per request; with
