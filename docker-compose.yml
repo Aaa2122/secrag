@@ -35,6 +35,8 @@ services:
       REDIS_URL: redis://redis:6379/0
     ports:
       - "8000:8000"
+    volumes:
+      - hf_cache:/root/.cache/huggingface
     depends_on:
       db:
         condition: service_healthy
@@ -43,3 +45,4 @@ services:
 
 volumes:
   pgdata:
+  hf_cache:
