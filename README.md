@@ -3,6 +3,10 @@
 Production RAG over SEC 10-K filings: hybrid retrieval, local reranking,
 streamed answers with citations, and versioned evaluation runs.
 
+[Live interface](http://145.239.196.98:8000/) ·
+[Evaluation record](http://145.239.196.98:8000/evals) ·
+[Health](http://145.239.196.98:8000/health)
+
 ![secrag architecture](docs/assets/secrag-architecture.png)
 
 ## Architecture
