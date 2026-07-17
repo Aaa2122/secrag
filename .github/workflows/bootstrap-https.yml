@@ -24,6 +24,10 @@ jobs:
             'set -eu
              curl -fsS http://127.0.0.1:8000/health >/dev/null
              sudo -n install -d -m 755 /opt/secrag-caddy
+             if command -v ufw >/dev/null 2>&1; then
+               sudo -n ufw allow 80/tcp
+               sudo -n ufw allow 443/tcp
+             fi
              echo c2VjcmFnLjE0NS4yMzkuMTk2Ljk4LnNzbGlwLmlvIHsKICAgIHJldmVyc2VfcHJveHkgMTI3LjAuMC4xOjgwMDAKfQo= | base64 -d | sudo -n tee /opt/secrag-caddy/Caddyfile >/dev/null
              sudo -n docker rm -f secrag-caddy 2>/dev/null || true
              sudo -n docker run -d --name secrag-caddy --restart unless-stopped --network host \
