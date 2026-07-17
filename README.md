@@ -1,5 +1,8 @@
 # secrag
 
+[![CI](https://github.com/Aaa2122/secrag/actions/workflows/ci.yml/badge.svg)](https://github.com/Aaa2122/secrag/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
 Production RAG over SEC 10-K filings: hybrid retrieval, local reranking,
 streamed answers with citations, and versioned evaluation runs.
 
