@@ -31,14 +31,16 @@ TLS + domain with Caddy (auto-provisions Let's Encrypt):
 ```bash
 apt install caddy
 cat > /etc/caddy/Caddyfile <<EOF
-secrag.example.com {
+secrag.145.239.196.98.sslip.io {
     reverse_proxy localhost:8000
 }
 EOF
 systemctl reload caddy
 ```
 
-Point an A record at the VPS; done — `https://secrag.example.com/evals` is public.
+The production endpoint is
+`https://secrag.145.239.196.98.sslip.io/evals`. Caddy redirects HTTP to HTTPS
+and renews the certificate automatically.
 
 ## 2. Operational notes
 
